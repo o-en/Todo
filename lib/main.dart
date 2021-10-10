@@ -83,6 +83,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget getMain() {
+    setTodayTodos();
     return ListView.builder(
       // 기기마다 화면 크기가 달라서 리스트뷰로 가장 바깥을 감싸주는게 좋음
       itemCount: 4,
@@ -227,9 +228,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 memo: "",
                 done: 0,
                 category: "운동",
-                date: Utils.getFormatTime(DateTime.now().subtract(Duration(days: 3)))))));
-                // date: Utils.getFormatTime(DateTime.now())))));
-    setTodayTodos();
+                // date: Utils.getFormatTime(DateTime.now().subtract(Duration(days: 3)))))));
+                date: Utils.getFormatTime(DateTime.now())))));
+    // setTodayTodos();
     setTodosByDate();
   }
 
