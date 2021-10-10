@@ -66,11 +66,6 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
         currentIndex: selectIndex,
         onTap: (idx) {
-          if (idx == 1) {
-            setDistinctTodoDates();
-            setTodosByDate();
-          }
-
           setState(() {
             selectIndex = idx;
           });
@@ -176,6 +171,8 @@ class _MyHomePageState extends State<MyHomePage> {
   List<Todo> allTodo = [];
 
   Widget getHistory() {
+    setDistinctTodoDates();
+    setTodosByDate();
     int countOfDate = getCountOfDates();
     return ListView.builder(
         padding: EdgeInsets.symmetric(vertical: 10),
@@ -230,8 +227,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 memo: "",
                 done: 0,
                 category: "운동",
-                // date: Utils.getFormatTime(DateTime.now().subtract(Duration(days: 3)))))));
-                date: Utils.getFormatTime(DateTime.now())))));
+                date: Utils.getFormatTime(DateTime.now().subtract(Duration(days: 3)))))));
+                // date: Utils.getFormatTime(DateTime.now())))));
     setTodayTodos();
     setTodosByDate();
   }
@@ -267,7 +264,7 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {});
   }
 
-  void getAllTodo() async {
+  void setAllTodo() async {
     allTodo = await dbHelper.getAllTodo();
     setState(() {});
   }
@@ -277,11 +274,12 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void setDistinctTodoDates() {
+    setAllTodo();
     List<DateTime> dates = [];
     for (var todo in allTodo) {
       dates.add(Utils.numToDateTime(todo.date));
     }
-    distinctTodoDates = dates.toSet().toList();
+    distinctTodoDates = dates.toSet().toList().reversed.toList();
   }
 }
 
