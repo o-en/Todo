@@ -37,7 +37,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
-    print('++++++++');
     setTodayTodos();
     super.initState();
   }
@@ -64,12 +63,12 @@ class _MyHomePageState extends State<MyHomePage> {
               icon: Icon(Icons.today_outlined), label: "오늘"),
           BottomNavigationBarItem(
               icon: Icon(Icons.assignment_outlined), label: "기록"),
-          BottomNavigationBarItem(icon: Icon(Icons.more_horiz), label: "더보기"),
         ],
         currentIndex: selectIndex,
         onTap: (idx) {
           if (idx == 1) {
-            getAllTodo();
+            setDistinctTodoDates();
+            setTodosByDate();
           }
 
           setState(() {
@@ -91,6 +90,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget getMain() {
     return ListView.builder(
       // 기기마다 화면 크기가 달라서 리스트뷰로 가장 바깥을 감싸주는게 좋음
+      itemCount: 4,
       itemBuilder: (ctx, idx) {
         if (idx == 0) {
           return Container(
@@ -170,66 +170,51 @@ class _MyHomePageState extends State<MyHomePage> {
 
         return Container();
       },
-      itemCount: 4,
     );
   }
 
   List<Todo> allTodo = [];
 
   Widget getHistory() {
-    setDistinctTodoDates();
-    print('distinctTodoDates: $distinctTodoDates');
-    setTodosByDate();
     int countOfDate = getCountOfDates();
-    print('###########');
-    print(countOfDate);
     return ListView.builder(
-      itemBuilder: (ctx, idx) {
-        print('=========');
-        print('idx: $idx');
-        print(allTodo);
-        DateTime date = distinctTodoDates[idx];
-        print('date: $date');
-        print(todosByDate);
-        List<Todo> todos = todosByDate[date] ?? [];
-        print(todos);
-        return Container(
-          child: Column(
-            children: List.generate(todos.length + 1, (_idx) {
-              print('idx@@@@@@@@@@@@');
-              print(_idx);
-              if (_idx == 0) {
-                print('0!!!!!!!!!!!!');
-                return Text(
-                  date.toString(),
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                );
-              } else {
-                Todo t = todos[_idx - 1];
-                return InkWell(
-                  child: TodoCardWidget(t: t),
-                  onTap: () async {
-                    setState(() {
-                      if (t.done == 0) {
-                        t.done = 1;
-                      } else {
-                        t.done = 0;
-                      }
-                    });
+        padding: EdgeInsets.symmetric(vertical: 10),
+        itemCount: countOfDate,
+        itemBuilder: (ctx, idx) {
+          DateTime date = distinctTodoDates[idx];
+          List<Todo> todos = todosByDate[date] ?? [];
+          return Container(
+            child: Column(
+              children: List.generate(todos.length + 1, (_idx) {
+                if (_idx == 0) {
+                  return Container(margin: EdgeInsets.symmetric(vertical: 20),child: Text(
+                    "${date.month}월 ${date.day}일",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ));
+                } else {
+                  Todo t = todos[_idx - 1];
+                  return InkWell(
+                    child: TodoCardWidget(t: t),
+                    onTap: () async {
+                      setState(() {
+                        if (t.done == 0) {
+                          t.done = 1;
+                        } else {
+                          t.done = 0;
+                        }
+                      });
 
-                    await dbHelper.insertTodo(t);
-                  },
-                  onLongPress: () {
-                    modifyTodo(t);
-                  },
-                );
-              }
-            }),
-          ),
-        );
-      },
-      itemCount: countOfDate,
-    );
+                      await dbHelper.insertTodo(t);
+                    },
+                    onLongPress: () {
+                      modifyTodo(t);
+                    },
+                  );
+                }
+              }),
+            ),
+          );
+        });
   }
 
   // 투두 추가
@@ -237,7 +222,6 @@ class _MyHomePageState extends State<MyHomePage> {
     // async: 비동기 함수라는걸 알려줘서 await 사용가능
     // 화면 이동
     // await으로 todo값을 넘겨줄때까지 함수 실행을 기다려야함
-    print('addTodo');
     Todo todo = await Navigator.of(context).push(MaterialPageRoute(
         builder: (ctx) => TodoWritePage(
             todo: Todo(
@@ -248,8 +232,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 category: "운동",
                 // date: Utils.getFormatTime(DateTime.now().subtract(Duration(days: 3)))))));
                 date: Utils.getFormatTime(DateTime.now())))));
-    print(todo);
     setTodayTodos();
+    setTodosByDate();
   }
 
   // 투두 수정
@@ -337,12 +321,10 @@ class TodoCardWidget extends StatelessWidget {
           ),
           Container(height: 8),
           Text(t.memo, style: TextStyle(color: Colors.white)),
-          now == t.date
-              ? Container()
-              : Text(
-                  "${time.month}월 ${time.day}일",
-                  style: TextStyle(color: Colors.white),
-                )
+          Text(
+            "${time.month}월 ${time.day}일",
+            style: TextStyle(color: Colors.white),
+          )
         ],
       ),
     );
